@@ -63,7 +63,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         # !!! A remplacer avec vos informations de connexion !!!
-        'NAME': "jo_project",
+        'NAME': "jo_project_starter",
         "USER": "root",
         "PASSWORD": "",
         "HOST": "127.0.0.1",
