@@ -413,3 +413,22 @@ INSERT INTO `mainapp_team` (`id`, `name`, `nickname`, `code`) VALUES
 (3, 'Guinée', 'Syli National', 'GN'),
 (2, 'États-Unis', 'Team USA', 'US'),
 (1, 'France', 'Les Bleus', 'FR');
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `mainapp_ticket`
+--
+
+DROP TABLE IF EXISTS `mainapp_ticket`;
+CREATE TABLE IF NOT EXISTS `mainapp_ticket` (
+  `id` varchar(36) NOT NULL,
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Déchargement des données de la table `mainapp_ticket`
+--
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
