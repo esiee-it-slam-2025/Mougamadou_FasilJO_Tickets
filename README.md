@@ -178,6 +178,7 @@ fetch(apiPath, {
 
 ---
 
+
 ### Débogage caméra téléphone
 
 Cet exercice utilisant l'accès à la caméra depuis Javascript, nous allons nous heurter à quelques problèmes suite à la sécurité imposée par les navigateurs web.
@@ -185,3 +186,9 @@ Cet exercice utilisant l'accès à la caméra depuis Javascript, nous allons nou
 Lorsque vous voudriez tester cette page web sur votre ordinateur, vous pourrez ouvrir directement le fichier dans le navigateur web ou encore créer à la volée un petit serveur web qui servira la page sur l'adresse `localhost` (par exemple à l'aide de Python ou de l'extension [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) pour VS Code).
 
 Pour tester votre page sur votre téléphone, il faudra soit la télécharger et l'ouvrir à la main, soit l'ouvrir depuis un site web servi strictement en **HTTPS** afin d'avoir l'accès à la caméra de fonctionnel. Aussi, vous ne pourrez pas accéder au serveur web de test qui tourne sur votre ordinateur depuis votre téléphone (en tapant l'IP locale de l'ordinateur) car dans ce cas le navigateur refusera d'afficher la caméra sur un serveur web n'utilisant pas **HTTPS**.
+
+## Lancer l'application
+1. Installez django-cors-headers via la commande `pip install django-cors-headers`
+2. Créez une base de données et modifiez le fichier `base.py` si besoin pour la connecter
+3. Importer les tables et les données fourni par le CIO via le fichier data_jo.sql
+4. Lancez l'application avec `py manage.py runserver`
