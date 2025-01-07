@@ -1,0 +1,45 @@
+@font-face {
+    font-family: 'Paris2024';
+    src: url('Paris2024.ttf') format('truetype');
+}
+
+body {
+    font-family: 'Paris2024', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #1a1a1a;
+    color: white;
+    padding: 1rem;
+}
+
+main {
+    padding: 2rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+.button {
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
