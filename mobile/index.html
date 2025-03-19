@@ -1,9 +1,720 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>JO Project</title>
-	</head>
-	<body></body>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JO 2024 - Billets</title>
+    <style>
+        @font-face {
+            font-family: 'Paris2024';
+            src: url('assets/Paris2024.ttf') format('truetype');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Paris2024', sans-serif;
+        }
+
+        body {
+            max-width: 100vw;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+        }
+
+        header {
+            background-color: #1a1a1a;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auth-container {
+            padding: 2rem;
+            display: none; /* Caché par défaut */
+        }
+
+        .auth-container.active {
+            display: block;
+        }
+
+        .events-container {
+            padding: 1rem;
+            display: none; /* Caché jusqu'à la connexion */
+        }
+
+        .events-container.active {
+            display: block;
+        }
+
+        .event-card {
+            background: white;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tickets-container {
+            padding: 1rem;
+            display: none;
+        }
+
+        .tickets-container.active {
+            display: block;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .error-message {
+            color: red;
+            margin: 1rem 0;
+        }
+
+        .ticket {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+        }
+
+        .ticket-details {
+            flex: 1;
+        }
+
+        .qr-code {
+            margin-left: 1rem;
+        }
+
+        .qr-code img {
+            width: 100px;
+            height: 100px;
+        }
+
+        nav {
+            margin: 1rem 0;
+        }
+
+        nav button {
+            margin-right: 1rem;
+        }
+
+        /* Styles pour l'affichage des matchs */
+        .match-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .team-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 30%;
+        }
+
+        .flag img {
+            width: 80px;
+            height: 50px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+        }
+
+        .team-name {
+            margin-top: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .match-details {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 40%;
+        }
+
+        .vs {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .date, .time {
+            margin-bottom: 0.25rem;
+        }
+
+        .stadium {
+            font-style: italic;
+        }
+
+        .buy-section {
+            text-align: center;
+            padding: 1rem 0;
+            border-top: 1px solid #eee;
+        }
+
+        .buy-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .buy-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styles pour le modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .ticket-categories {
+            margin: 1.5rem 0;
+        }
+
+        .category-item {
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-name {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .category-desc {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-item input {
+            width: 60px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .total-price {
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-align: right;
+            margin: 1rem 0;
+        }
+
+        /* Ajustements pour la navigation */
+        nav {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>JO 2024</h1>
+        <div id="userActions">
+            <button id="registerBtn">S'inscrire</button>
+            <button id="loginBtn" class="active">Se connecter</button>
+            <nav>
+                <button id="showEventsBtn">Voir les matchs</button>
+                <button id="showMyTicketsBtn">Mes billets</button>
+            </nav>
+            <button id="logoutBtn" style="display: none;">Se déconnecter</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Formulaire de connexion -->
+        <div id="loginForm" class="auth-container active">
+            <h2>Connexion</h2>
+            <div id="loginError" class="error-message"></div>
+            <form onsubmit="return login(event)">
+                <div class="form-group">
+                    <label for="username">Nom d'utilisateur</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">Se connecter</button>
+            </form>
+        </div>
+
+        <!-- Formulaire d'inscription -->
+        <div id="registerForm" class="auth-container">
+            <h2>Inscription</h2>
+            <div id="registerError" class="error-message"></div>
+            <form id="registerFormElement">
+                <div class="form-group">
+                    <label for="regUsername">Nom d'utilisateur</label>
+                    <input type="text" id="regUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Mot de passe</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <button type="submit">S'inscrire</button>
+            </form>
+        </div>
+
+        <!-- Liste des événements -->
+        <div id="eventsList" class="events-container">
+            <!-- Les événements seront ajoutés ici dynamiquement -->
+        </div>
+
+        <!-- Mes billets -->
+        <div id="myTickets" class="tickets-container">
+            <!-- Les billets seront ajoutés ici dynamiquement -->
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+    <script>
+        const API_URL = 'http://127.0.0.1:8000';
+        let userToken = localStorage.getItem('userToken');
+
+        // Gestion de l'affichage des formulaires
+        document.getElementById('loginBtn').addEventListener('click', () => showForm('login'));
+        document.getElementById('registerBtn').addEventListener('click', () => showForm('register'));
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+
+        // Gestion de l'inscription
+        document.getElementById('registerFormElement').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+
+            fetch(`${API_URL}/api/register/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    userToken = data.token;
+                    localStorage.setItem('userToken', userToken);
+                    document.getElementById('loginBtn').style.display = 'none';
+                    document.getElementById('registerBtn').style.display = 'none';
+                    document.getElementById('logoutBtn').style.display = 'block';
+                    showEvents();
+                    alert('Inscription réussie !');
+                } else {
+                    alert(data.error || 'Erreur lors de l\'inscription');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur lors de l\'inscription');
+            });
+        });
+
+        function showForm(type) {
+            document.getElementById('loginForm').classList.toggle('active', type === 'login');
+            document.getElementById('registerForm').classList.toggle('active', type === 'register');
+            // Effacer les messages d'erreur
+            document.getElementById('loginError').textContent = '';
+            document.getElementById('registerError').textContent = '';
+        }
+
+        async function login(event) {
+            event.preventDefault();
+            document.getElementById('loginError').textContent = '';
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_URL}/api/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    userToken = data.token;
+                    localStorage.setItem('userToken', userToken);
+                    document.getElementById('loginBtn').style.display = 'none';
+                    document.getElementById('registerBtn').style.display = 'none';
+                    document.getElementById('logoutBtn').style.display = 'block';
+                    showEvents();
+                } else {
+                    document.getElementById('loginError').textContent = data.error || 'Identifiants invalides';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('loginError').textContent = 'Erreur de connexion au serveur';
+            }
+        }
+
+        document.getElementById('showEventsBtn').addEventListener('click', showEvents);
+        document.getElementById('showMyTicketsBtn').addEventListener('click', showMyTickets);
+
+        function logout() {
+            localStorage.removeItem('userToken');
+            userToken = null;
+            document.getElementById('loginBtn').style.display = 'block';
+            document.getElementById('registerBtn').style.display = 'block';
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('eventsList').classList.remove('active');
+            document.getElementById('myTickets').classList.remove('active');
+            document.getElementById('loginForm').classList.add('active');
+        }
+
+// Modifions la fonction showEvents pour afficher les drapeaux et améliorer la présentation
+async function showEvents() {
+    try {
+        const response = await fetch(`${API_URL}/api/events/`);
+        const data = await response.json();
+        const container = document.getElementById('eventsList');
+        container.innerHTML = '<h2>Matchs à venir</h2>';
+        
+        data.events.forEach(event => {
+            const eventCard = document.createElement('div');
+            eventCard.className = 'event-card';
+            
+            // Création de l'affichage du match avec drapeaux
+            const teamHomeCode = event.team_home?.code || 'XX';
+            const teamAwayCode = event.team_away?.code || 'XX';
+            
+            eventCard.innerHTML = `
+                <div class="match-display">
+                    <div class="team-info">
+                        <div class="flag">
+                            <img src="https://flagcdn.com/w80/${teamHomeCode.toLowerCase()}.png" 
+                                 alt="${event.team_home?.name || 'À déterminer'}" 
+                                 onerror="this.src='https://via.placeholder.com/80x50?text=${teamHomeCode}'">
+                        </div>
+                        <div class="team-name">${event.team_home?.name || 'À déterminer'}</div>
+                    </div>
+                    
+                    <div class="match-details">
+                        <div class="vs">VS</div>
+                        <div class="date">${new Date(event.date).toLocaleDateString()}</div>
+                        <div class="time">${new Date(event.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        <div class="stadium">${event.stadium.name}</div>
+                    </div>
+                    
+                    <div class="team-info">
+                        <div class="flag">
+                            <img src="https://flagcdn.com/w80/${teamAwayCode.toLowerCase()}.png" 
+                                 alt="${event.team_away?.name || 'À déterminer'}" 
+                                 onerror="this.src='https://via.placeholder.com/80x50?text=${teamAwayCode}'">
+                        </div>
+                        <div class="team-name">${event.team_away?.name || 'À déterminer'}</div>
+                    </div>
+                </div>
+                
+                <div class="buy-section">
+                    <button class="buy-button" onclick="showTicketModal(${event.id}, '${event.team_home?.name || 'À déterminer'}', '${event.team_away?.name || 'À déterminer'}')">Acheter des billets</button>
+                </div>
+            `;
+            
+            container.appendChild(eventCard);
+        });
+        
+        // Ajouter le modal pour l'achat de billets
+        if (!document.getElementById('ticketModal')) {
+            const modal = document.createElement('div');
+            modal.id = 'ticketModal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-modal">&times;</span>
+                    <h3 id="modal-title">Acheter des billets</h3>
+                    <div id="modal-content">
+                        <div class="ticket-categories">
+                            <div class="category-item">
+                                <label>
+                                    <div class="category-name">Silver - 100€</div>
+                                    <div class="category-desc">Places standards</div>
+                                    <input type="number" min="0" value="0" id="modal-silver">
+                                </label>
+                            </div>
+                            <div class="category-item">
+                                <label>
+                                    <div class="category-name">Gold - 200€</div>
+                                    <div class="category-desc">Meilleures places</div>
+                                    <input type="number" min="0" value="0" id="modal-gold">
+                                </label>
+                            </div>
+                            <div class="category-item">
+                                <label>
+                                    <div class="category-name">Platinum - 300€</div>
+                                    <div class="category-desc">Places VIP</div>
+                                    <input type="number" min="0" value="0" id="modal-platinum">
+                                </label>
+                            </div>
+                        </div>
+                        <div class="total-price">Total: <span id="total-price">0</span>€</div>
+                        <button id="confirm-purchase" class="buy-button">Confirmer l'achat</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Gestion de la fermeture du modal
+            document.querySelector('.close-modal').addEventListener('click', () => {
+                document.getElementById('ticketModal').style.display = 'none';
+            });
+            
+            // Calcul du prix total en temps réel
+            const updateTotal = () => {
+                const silver = parseInt(document.getElementById('modal-silver').value) || 0;
+                const gold = parseInt(document.getElementById('modal-gold').value) || 0;
+                const platinum = parseInt(document.getElementById('modal-platinum').value) || 0;
+                
+                const total = silver * 100 + gold * 200 + platinum * 300;
+                document.getElementById('total-price').textContent = total;
+            };
+            
+            document.getElementById('modal-silver').addEventListener('input', updateTotal);
+            document.getElementById('modal-gold').addEventListener('input', updateTotal);
+            document.getElementById('modal-platinum').addEventListener('input', updateTotal);
+        }
+        
+        container.classList.add('active');
+        document.getElementById('loginForm').classList.remove('active');
+        document.getElementById('registerForm').classList.remove('active');
+        document.getElementById('myTickets').classList.remove('active');
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur lors du chargement des événements');
+    }
+}
+
+        // Fonction pour afficher le modal d'achat de billets
+        function showTicketModal(eventId, teamHome, teamAway) {
+            if (!userToken) {
+                alert('Veuillez vous connecter pour acheter des billets');
+                return;
+            }
+            
+            const modal = document.getElementById('ticketModal');
+            document.getElementById('modal-title').textContent = `Billets: ${teamHome} vs ${teamAway}`;
+            
+            // Réinitialiser les valeurs
+            document.getElementById('modal-silver').value = 0;
+            document.getElementById('modal-gold').value = 0;
+            document.getElementById('modal-platinum').value = 0;
+            document.getElementById('total-price').textContent = '0';
+            
+            // Ajouter l'event listener pour l'achat
+            const confirmButton = document.getElementById('confirm-purchase');
+            
+            // Supprimer les anciens listeners pour éviter les doublons
+            const newButton = confirmButton.cloneNode(true);
+            confirmButton.parentNode.replaceChild(newButton, confirmButton);
+            
+            newButton.addEventListener('click', () => {
+                const silver = parseInt(document.getElementById('modal-silver').value) || 0;
+                const gold = parseInt(document.getElementById('modal-gold').value) || 0;
+                const platinum = parseInt(document.getElementById('modal-platinum').value) || 0;
+                
+                const tickets = [];
+                if (silver > 0) tickets.push({ category: 'SILVER', quantity: silver });
+                if (gold > 0) tickets.push({ category: 'GOLD', quantity: gold });
+                if (platinum > 0) tickets.push({ category: 'PLATINUM', quantity: platinum });
+                
+                if (tickets.length === 0) {
+                    alert('Veuillez sélectionner au moins un billet');
+                    return;
+                }
+                
+                buyTickets(eventId, tickets);
+                modal.style.display = 'none';
+            });
+            
+            modal.style.display = 'block';
+        }
+
+        // Mise à jour de la fonction buyTickets
+        async function buyTickets(eventId, tickets) {
+            try {
+                const response = await fetch(`${API_URL}/api/buyTicket/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${userToken}`
+                    },
+                    body: JSON.stringify({
+                        event_id: eventId,
+                        tickets: tickets
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Billets achetés avec succès !');
+                    showMyTickets();
+                } else {
+                    alert(data.error || 'Erreur lors de l\'achat');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de l\'achat des billets');
+            }
+        }
+
+        async function showMyTickets() {
+        if (!userToken) {
+            alert('Veuillez vous connecter pour voir vos billets');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/api/myTickets/`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token ${userToken}`
+                }
+            });
+
+            const data = await response.json();
+            const tickets = data.tickets;
+            const container = document.getElementById('myTickets');
+            container.innerHTML = '<h2>Mes billets</h2>';
+
+            // Grouper les billets par événement
+            const ticketsByEvent = {};
+            tickets.forEach(ticket => {
+                if (!ticketsByEvent[ticket.event.id]) {
+                    ticketsByEvent[ticket.event.id] = {
+                        event: ticket.event,
+                        tickets: []
+                    };
+                }
+                ticketsByEvent[ticket.event.id].tickets.push(ticket);
+            });
+
+            Object.values(ticketsByEvent).forEach(eventTickets => {
+                const eventCard = document.createElement('div');
+                eventCard.className = 'event-card';
+                let ticketsHtml = eventTickets.tickets.map(ticket => `
+                    <div class="ticket">
+                        <div class="ticket-details">
+                            <h4>Billet ${ticket.category}</h4>
+                            <p>ID: ${ticket.id}</p>
+                            <p>Prix: ${ticket.price}€</p>
+                            <p>Acheté le: ${new Date(ticket.purchase_date).toLocaleDateString()}</p>
+                        </div>
+                        <div class="qr-code">
+                            <img id="qrcode-${ticket.id}" />
+                        </div>
+                    </div>
+                `).join('');
+
+                eventCard.innerHTML = `
+                    <h3>${eventTickets.event.team_home.name} vs ${eventTickets.event.team_away.name}</h3>
+                    <p>Date: ${new Date(eventTickets.event.date).toLocaleString()}</p>
+                    <p>Stade: ${eventTickets.event.stadium.name}</p>
+                    <div class="tickets">
+                        ${ticketsHtml}
+                    </div>
+                `;
+                container.appendChild(eventCard);
+
+                // Générer les QR codes
+                eventTickets.tickets.forEach(ticket => {
+                    const qrData = JSON.stringify({
+                        ticketId: ticket.id,
+                        category: ticket.category,
+                        event: ticket.event.id
+                    });
+                    QRCode.toDataURL(qrData, (err, url) => {
+                        if (err) return;
+                        const img = document.getElementById(`qrcode-${ticket.id}`);
+                        if (img) img.src = url;
+                    });
+                });
+            });
+
+            // Cacher les autres conteneurs et montrer myTickets
+            document.getElementById('eventsList').classList.remove('active');
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('registerForm').classList.remove('active');
+            container.classList.add('active');
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Erreur lors du chargement des billets');
+        }
+    }
+
+        // Vérifier si l'utilisateur est déjà connecté au chargement
+        if (userToken) {
+            document.getElementById('loginBtn').style.display = 'none';
+            document.getElementById('registerBtn').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'block';
+            showEvents();
+        }
+    </script>
+</body>
 </html>

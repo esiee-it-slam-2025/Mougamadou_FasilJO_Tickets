@@ -10,6 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Pensez à générer une nouvelle clé à l'aide de https://djecrety.ir/
 SECRET_KEY = "velicyjh0)jmde&@qj=_)hzik!&sw4ml8b92ni&!y@=cu(-hj8"
 
+LOGIN_URL = 'admin_login'
+LOGIN_REDIRECT_URL = 'event_list'
 
 INSTALLED_APPS = [
     # On explicite l"usage de notre application pour que les templates
@@ -45,7 +47,7 @@ WSGI_APPLICATION = "mainapp.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR.parent / 'admin/mainapp/templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

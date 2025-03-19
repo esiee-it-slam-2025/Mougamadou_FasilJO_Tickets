@@ -1,13 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Scaner</title>
-		<script src="index.js"></script>
+		<title>Scanner de Ticket JO 2024</title>
 		<link rel="stylesheet" href="index.css" />
 	</head>
 	<body>
-		<h1>Scanner de ticket</h1>
+		<header>
+			<h1>Scanner de Ticket JO 2024</h1>
+		</header>
+		
+		<main>
+			<div class="scanner-container">
+				<h2>Scanner un billet</h2>
+				<p>Scannez le QR code d'un billet pour vérifier sa validité</p>
+				
+				<div class="scanner-options">
+					<button id="camera-button">Utiliser la caméra</button>
+					<button id="file-button">Utiliser une image</button>
+				</div>
+				
+				<div id="video-container">
+					<video id="qr-video"></video>
+				</div>
+				
+				<div class="upload-container" id="upload-container">
+					<div class="upload-icon">📁</div>
+					<p>Cliquez ou glissez une image contenant un QR code</p>
+					<input type="file" id="file-scan" accept="image/*">
+				</div>
+				
+				<div class="loader" id="loader"></div>
+			</div>
+			
+			<div class="ticket-info" id="ticket-info">
+				<div id="validity-status"></div>
+				<div class="ticket-details" id="ticket-details"></div>
+			</div>
+		</main>
+
+		<script type="module">
+			import QrScanner from "https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js";
+			window.QrScanner = QrScanner; // On rend QrScanner accessible globalement
+		</script>		
+		<script src="index.js"></script>
 	</body>
 </html>

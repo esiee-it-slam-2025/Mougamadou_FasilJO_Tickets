@@ -5,6 +5,7 @@ from mainapp.models.team import Team
 from mainapp.models.ticket import Ticket
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
@@ -16,7 +17,7 @@ from django.shortcuts import get_object_or_404
 
 
 def stadiums(request):
-    # Récupérer tous les stades (plus besoin de prefetch_related car on ne veut plus les événements)
+    # Récupérer tous les stades
     all_stadiums = Stadium.objects.all()
     
     stadiums_data = []
@@ -115,6 +116,8 @@ def login_view(request):
         username = data.get('username')
         password = data.get('password')
         
+        print(f"Tentative de connexion pour : {username}")
+        
         if not username or not password:
             return JsonResponse({
                 'error': 'Username et password sont requis'
@@ -123,6 +126,8 @@ def login_view(request):
         user = authenticate(username=username, password=password)
         
         if user is not None:
+            # Connecter l'utilisateur
+            login(request, user)
             # Générer ou récupérer le token
             token, created = Token.objects.get_or_create(user=user)
             return JsonResponse({
@@ -135,14 +140,21 @@ def login_view(request):
                 }
             })
         else:
+            print(f"Échec d'authentification pour {username}")  # Log pour debug
             return JsonResponse({
-                'error': 'Identifiants invalides'
+                'error': 'Identifiants invalides',
+                'success': False
             }, status=401)
             
     except json.JSONDecodeError:
         return JsonResponse({
             'error': 'JSON invalide'
         }, status=400)
+    except Exception as e:
+        print(f"Erreur inattendue: {str(e)}")  # Log pour debug
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
     
 @csrf_exempt
 @api_view(['POST'])     
@@ -235,7 +247,15 @@ def get_ticket_info(request, ticket_id):
             'stadium': {
                 'name': ticket.event.stadium.name,
                 'location': ticket.event.stadium.location
-            }
+            },
+            'team_home': {
+                'name': ticket.event.team_home.name,
+                'code': ticket.event.team_home.code
+            } if ticket.event.team_home else None,
+            'team_away': {
+                'name': ticket.event.team_away.name,
+                'code': ticket.event.team_away.code
+            } if ticket.event.team_away else None
         },
         'category': ticket.category,
         'price': str(ticket.price),
@@ -246,4 +266,123 @@ def get_ticket_info(request, ticket_id):
             'username': ticket.user.username
         }
     }
-    return JsonResponse(ticket_info) 
+    return JsonResponse(ticket_info)
+
+def add_cors_headers(response):
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def my_tickets(request):
+    # Récupérer tous les tickets de l'utilisateur connecté
+    tickets = Ticket.objects.filter(user=request.user).select_related(
+        'event',
+        'event__stadium',
+        'event__team_home',
+        'event__team_away'
+    ).order_by('event__start')
+    
+    tickets_data = []
+    for ticket in tickets:
+        ticket_info = {
+            'id': ticket.id,
+            'category': ticket.category,
+            'price': str(ticket.price),
+            'purchase_date': ticket.purchase_date.strftime('%Y-%m-%d %H:%M'),
+            'is_used': ticket.is_used,
+            'event': {
+                'id': ticket.event.id,
+                'date': ticket.event.start.strftime('%Y-%m-%d %H:%M'),
+                'stadium': {
+                    'name': ticket.event.stadium.name,
+                    'location': ticket.event.stadium.location
+                },
+                'team_home': {
+                    'name': ticket.event.team_home.name,
+                    'code': ticket.event.team_home.code
+                } if ticket.event.team_home else None,
+                'team_away': {
+                    'name': ticket.event.team_away.name,
+                    'code': ticket.event.team_away.code
+                } if ticket.event.team_away else None
+            }
+        }
+        tickets_data.append(ticket_info)
+    
+    return JsonResponse({
+        'tickets': tickets_data
+    })
+    
+@csrf_exempt
+def register_view(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            'error': 'Cette méthode nécessite une requête POST'
+        }, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        
+        if not username or not password:
+            return JsonResponse({
+                'error': 'Username et password sont requis'
+            }, status=400)
+        
+        # Vérifier si l'utilisateur existe déjà
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({
+                'error': 'Ce nom d\'utilisateur est déjà pris'
+            }, status=400)
+            
+        # Créer le nouvel utilisateur
+        user = User.objects.create_user(username=username, password=password)
+        
+        # Créer un token pour le nouvel utilisateur
+        token, _ = Token.objects.get_or_create(user=user)
+        
+        return JsonResponse({
+            'success': True,
+            'token': token.key,
+            'user': {
+                'id': user.id,
+                'username': user.username
+            }
+        })
+            
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'JSON invalide'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+    
+@api_view(['POST'])
+def mark_ticket_used(request, ticket_id):
+    try:
+        ticket = Ticket.objects.get(id=ticket_id)
+        
+        if ticket.is_used:
+            return JsonResponse({
+                'success': False,
+                'error': 'Ce billet a déjà été utilisé'
+            })
+        
+        ticket.is_used = True
+        ticket.save()
+        
+        return JsonResponse({
+            'success': True
+        })
+    except Ticket.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Billet non trouvé'
+        }, status=404)

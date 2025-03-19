@@ -1,0 +1,58 @@
+{% extends '_base.html' %}
+
+{% block content %}
+<h1>Billets vendus</h1>
+
+<form method="GET">
+    <select name="event">
+        <option value="">Tous les matchs</option>
+        {% for event in events %}
+            <option value="{{ event.id }}">
+                {{ event.start|date:"d/m/Y H:i" }} - {{ event.team_home.name }} vs {{ event.team_away.name }}
+            </option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filtrer</button>
+</form>
+
+{% for event in events %}
+    <div class="event-tickets">
+        <h2>{{ event.start|date:"d/m/Y H:i" }} - {{ event.team_home.name }} vs {{ event.team_away.name }}</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Ticket</th>
+                    <th>Utilisateur</th>
+                    <th>Catégorie</th>
+                    <th>Prix</th>
+                    <th>Date d'achat</th>
+                    <th>Utilisé</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in event.ticket_set.all %}
+                    <tr>
+                        <td>{{ ticket.id }}</td>
+                        <td>{{ ticket.user.username }}</td>
+                        <td>{{ ticket.category }}</td>
+                        <td>{{ ticket.price }}€</td>
+                        <td>{{ ticket.purchase_date|date:"d/m/Y H:i" }}</td>
+                        <td>{% if ticket.is_used %}Oui{% else %}Non{% endif %}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6">Aucun billet vendu pour ce match</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3">Total billets :</td>
+                    <td>{{ event.total_tickets }}</td>
+                    <td colspan="2">Total revenus : {{ event.total_revenue|default:"0" }}€</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+{% endfor %}
+{% endblock %}

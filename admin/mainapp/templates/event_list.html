@@ -1,0 +1,59 @@
+{% extends '_base.html' %}
+
+{% block content %}
+<h1>Gestion des matchs</h1>
+
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'create_event' %}" class="btn">Ajouter un match</a>
+</div>
+
+<form method="GET">
+    <select name="stadium">
+        <option value="">Tous les stades</option>
+        {% for stadium in stadiums %}
+            <option value="{{ stadium.id }}">{{ stadium.name }}</option>
+        {% endfor %}
+    </select>
+    <input type="date" name="date">
+    <button type="submit">Filtrer</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Stade</th>
+            <th>Équipe domicile</th>
+            <th>Score</th>
+            <th>Équipe extérieur</th>
+            <th>Gagnant</th>
+            <th>Actions : Score - Gagnant </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for event in events %}
+        <tr>
+            <td>{{ event.start|date:"d/m/Y H:i" }}</td>
+            <td>{{ event.stadium.name }}</td>
+            <td>{{ event.team_home.name|default:"-" }}</td>
+            <td>{{ event.score|default:"Non joué" }}</td>
+            <td>{{ event.team_away.name|default:"-" }}</td>
+            <td>
+                {% if event.winner %}
+                    <strong>{{ event.winner.name }}</strong>
+                {% else %}
+                    {% if event.score %}Match nul{% else %}-{% endif %}
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'edit_event' event.id %}" class="btn">Modifier</a>
+                <form method="POST" action="{% url 'delete_event' event.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn" style="background: #dc3545;" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce match ?')">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends '_base.html' %}
+
+{% block content %}
+<h1>Modifier le match</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+        <label>Date et heure</label>
+        <input type="datetime-local" name="start" value="{{ event.start|date:'Y-m-d\TH:i' }}" required>
+    </div>
+
+    <div class="form-group">
+        <label>Stade</label>
+        <select name="stadium" required>
+            {% for stadium in stadiums %}
+                <option value="{{ stadium.id }}" {% if stadium.id == event.stadium.id %}selected{% endif %}>
+                    {{ stadium.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Équipe domicile</label>
+        <select name="team_home">
+            <option value="">À déterminer</option>
+            {% for team in teams %}
+                <option value="{{ team.id }}" {% if team.id == event.team_home.id %}selected{% endif %}>
+                    {{ team.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Équipe extérieur</label>
+        <select name="team_away">
+            <option value="">À déterminer</option>
+            {% for team in teams %}
+                <option value="{{ team.id }}" {% if team.id == event.team_away.id %}selected{% endif %}>
+                    {{ team.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Score</label>
+        <input type="text" name="score" value="{{ event.score|default:'' }}" placeholder="ex: 2-1">
+    </div>
+
+    <div class="form-group">
+        <label>Gagnant</label>
+        <select name="winner_id">
+            <option value="">Aucun gagnant / Match nul</option>
+            {% if event.team_home %}
+                <option value="{{ event.team_home.id }}" {% if event.winner_id == event.team_home.id %}selected{% endif %}>
+                    {{ event.team_home.name }}
+                </option>
+            {% endif %}
+            {% if event.team_away %}
+                <option value="{{ event.team_away.id }}" {% if event.winner_id == event.team_away.id %}selected{% endif %}>
+                    {{ event.team_away.name }}
+                </option>
+            {% endif %}
+        </select>
+    </div>
+
+    <button type="submit" class="btn">Enregistrer</button>
+    <a href="{% url 'event_list' %}" class="btn" style="background: #dc3545;">Annuler</a>
+</form>
+{% endblock %}
